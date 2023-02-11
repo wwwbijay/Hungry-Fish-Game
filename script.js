@@ -109,6 +109,7 @@ class Bubble {
     this.speed = Math.random() * 3 + 1;
     this.distance;
     this.counted = false;
+    this.sound = Math.random() <= 0.5 ? "sound1" : "sound2";
   }
   update() {
     this.y -= this.speed;
@@ -125,6 +126,12 @@ class Bubble {
   }
 }
 
+//create sound element
+const bubbleSound1 = document.createElement("audio");
+bubbleSound1.src = "assets/sound1.ogg";
+const bubbleSound2 = document.createElement("audio");
+bubbleSound2.src = "assets/sound2.ogg";
+
 function addBubbles() {
   if (gameFrame % 100 == 0) {
     bubblesArray.push(new Bubble());
@@ -140,8 +147,15 @@ function addBubbles() {
       bubblesArray.splice(i, 1);
     }
     if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
+      if (!bubblesArray[i].counted) {
+        if (bubblesArray[i].sound == "sound1") bubbleSound1.play();
+        else bubbleSound2.play();
+
+        score++;
+        bubblesArray[i].counted = true;
+      }
+
       bubblesArray.splice(i, 1);
-      score++;
     }
   }
 }
