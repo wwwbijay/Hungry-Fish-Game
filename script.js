@@ -7,7 +7,7 @@ canvas.height = 500;
 
 let score = 0;
 let gameFrame = 0;
-ctx.font = "50px Georgia";
+ctx.font = "30px Georgia";
 
 //Mouse Interactivity
 const mouse = {
@@ -63,20 +63,24 @@ class Player {
   draw(context) {
     //draw line between player and mouse click point.
     if (mouse.click) {
-      ctx.lineWidth = 0.2;
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      ctx.lineTo(mouse.x, mouse.y);
-      ctx.stroke();
+      context.lineWidth = 0.2;
+      context.beginPath();
+      context.moveTo(this.x, this.y);
+      context.lineTo(mouse.x, mouse.y);
+      context.stroke();
     }
 
     //draw circle representation of player
 
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
+    context.fillStyle = "red";
+    context.beginPath();
+    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    context.fill();
+    context.closePath();
+
+    //Draw Player score
+    context.fillStyle = "black";
+    context.fillText("Score:" + score, 20, 50);
 
     // context.drawImage(
     //   this.image,
@@ -93,19 +97,64 @@ class Player {
 }
 
 const player = new Player();
+
 //Bubbles
+const bubblesArray = [];
+
+class Bubble {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height + Math.random() * canvas.height;
+    this.radius = 50;
+    this.speed = Math.random() * 3 + 1;
+    this.distance;
+    this.counted = false;
+  }
+  update() {
+    this.y -= this.speed;
+    const dx = this.x - player.x;
+    const dy = this.y - player.y;
+    this.distance = Math.sqrt(dx * dx + dy * dy);
+  }
+  draw() {
+    ctx.fillStyle = "skyBlue";
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+function addBubbles() {
+  if (gameFrame % 100 == 0) {
+    bubblesArray.push(new Bubble());
+  }
+
+  for (let i = 0; i < bubblesArray.length; i++) {
+    bubblesArray[i].draw();
+    bubblesArray[i].update();
+  }
+
+  for (let i = 0; i < bubblesArray.length; i++) {
+    if (bubblesArray[i].y < 0 - bubblesArray[i].radius) {
+      bubblesArray.splice(i, 1);
+    }
+    if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
+      bubblesArray.splice(i, 1);
+      score++;
+    }
+  }
+}
 
 //Animation Loop
 
-let lastTime = 0;
-//animation loop
-function animate(timeStamp) {
-  const deltaTime = timeStamp - lastTime;
-  lastTime = timeStamp;
+function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  player.update(deltaTime);
+  addBubbles();
+  player.update();
   player.draw(ctx);
   requestAnimationFrame(animate);
+  gameFrame++;
 }
 
-animate(0);
+animate();
