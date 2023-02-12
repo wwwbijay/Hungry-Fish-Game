@@ -10,6 +10,7 @@ let score = 0;
 let gameFrame = 0;
 ctx.font = "30px Georgia";
 let gameSpeed = 1;
+let gameOver = false;
 
 //Mouse Interactivity
 const mouse = {
@@ -47,8 +48,6 @@ class Player {
     this.frame = 0;
     this.spriteWidth = 498;
     this.spriteHeight = 327;
-
-    this.image = document.getElementById("player");
   }
 
   update() {
@@ -195,13 +194,91 @@ function addBubbles() {
   }
 }
 
-//Reapeating backgrounds
-// const background = new Image();
-// background.src = "assets/background.jpg";
+//Enemies
+const enemyImage = new Image();
+enemyImage.src = "assets/enemy-swimming.png";
 
-// function handleBackground() {
-//   ctx.draw(background, 0, 0, canvas.width, canvas.height);
-// }
+class Enemy {
+  constructor() {
+    this.radius = 60;
+    this.angle = 0;
+    this.x = canvas.width + 200;
+    this.y = Math.random() * (canvas.height - 150) + 90;
+    this.speed = Math.random() * 2 + 2;
+    this.frameX = 0;
+    this.frameY = 0;
+    this.frame = 0;
+    this.spriteWidth = 418;
+    this.spriteHeight = 397;
+    this.distance;
+  }
+
+  update() {
+    this.x -= this.speed;
+    if (this.x < 0 - this.radius * 2) {
+      this.x = canvas.width + 200;
+      this.y = Math.random() * (canvas.height - 150) + 90;
+      this.speed = Math.random() * 2 + 2;
+    }
+    //sprite animation
+    if (gameFrame % 5 == 0) {
+      this.frame++;
+      if (this.frame > 11) this.frame = 0;
+      if (this.frame == 3 || this.frame == 7 || this.frame == 11) {
+        this.frameX = 0;
+      } else {
+        this.frameX++;
+      }
+
+      if (this.frame < 3) this.frameY = 0;
+      else if (this.frame < 7) this.frameY = 1;
+      else if (this.frame < 11) this.frameY = 2;
+      else this.frameY = 0;
+    }
+
+    //collision detection
+    let dx = this.x - player.x;
+    let dy = this.y - player.y;
+    this.distance = Math.sqrt(dx * dx + dy * dy);
+    if (this.distance < this.radius + player.radius) {
+      handleGameOver();
+    }
+  }
+
+  draw() {
+    // draw circle representation of enemy
+
+    ctx.save();
+
+    ctx.drawImage(
+      enemyImage,
+      this.frameX * this.spriteWidth,
+      this.frameY * this.spriteHeight,
+      this.spriteWidth,
+      this.spriteHeight,
+      this.x - this.radius,
+      this.y - this.radius,
+      this.radius * 2,
+      this.radius * 2
+    );
+    ctx.restore();
+  }
+}
+
+const enemy1 = new Enemy();
+function handleEnemy() {
+  enemy1.draw();
+  enemy1.update();
+}
+
+function handleGameOver() {
+  ctx.save();
+  ctx.fillStyle = "white";
+  ctx.font = "bold 55px serif";
+  ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2 - 20);
+  gameOver = true;
+  ctx.restore();
+}
 
 //Animation Loop
 
@@ -209,9 +286,10 @@ function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // handleBackground();
   addBubbles();
+  handleEnemy();
   player.update();
   player.draw(ctx);
-  requestAnimationFrame(animate);
+  if (!gameOver) requestAnimationFrame(animate);
   gameFrame++;
 }
 
