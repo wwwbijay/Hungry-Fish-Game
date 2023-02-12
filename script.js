@@ -25,8 +25,15 @@ document.addEventListener("mousedown", (e) => {
 document.addEventListener("mouseup", (e) => {
   mouse.click = false;
 });
+
 //Player
 //Handle functions of main characters
+const playerLeft = new Image();
+playerLeft.src = "assets/fish_swim_left.png";
+
+const playerRight = new Image();
+playerRight.src = "assets/fish_swim_right.png";
+
 class Player {
   constructor() {
     this.radius = 50;
@@ -46,18 +53,15 @@ class Player {
     const dx = this.x - mouse.x;
     const dy = this.y - mouse.y;
 
+    let theta = Math.atan2(dy, dx);
+    this.angle = theta;
+
     if (this.x != mouse.x) {
       this.x -= dx / 22;
     }
     if (this.y != mouse.y) {
       this.y -= dy / 22;
     }
-
-    //set vertical boundary
-    // if (this.y > this.game.height - this.height * 0.5)
-    //   this.y = this.game.height - this.height * 0.5;
-    // else if (this.y < -this.height * 0.5) this.y = -this.height * 0.5;
-    //sprite animation
   }
 
   draw(context) {
@@ -72,27 +76,45 @@ class Player {
 
     //draw circle representation of player
 
-    context.fillStyle = "red";
-    context.beginPath();
-    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    context.fill();
-    context.closePath();
+    // context.fillStyle = "red";
+    // context.beginPath();
+    // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    // context.fill();
+    // context.closePath();
 
     //Draw Player score
     context.fillStyle = "black";
     context.fillText("Score:" + score, 20, 50);
 
-    // context.drawImage(
-    //   this.image,
-    //   this.frameX * this.width,
-    //   this.frameY * this.height,
-    //   this.width,
-    //   this.height,
-    //   this.x,
-    //   this.y,
-    //   this.width,
-    //   this.height
-    // );
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(this.angle);
+    if (this.x >= mouse.x) {
+      context.drawImage(
+        playerLeft,
+        this.frameX * this.spriteWidth,
+        this.frameY * this.spriteHeight,
+        this.spriteWidth,
+        this.spriteHeight,
+        0 - this.spriteWidth / 8,
+        0 - this.spriteHeight / 8,
+        this.spriteWidth / 4,
+        this.spriteHeight / 4
+      );
+    } else {
+      context.drawImage(
+        playerRight,
+        this.frameX * this.spriteWidth,
+        this.frameY * this.spriteHeight,
+        this.spriteWidth,
+        this.spriteHeight,
+        0 - this.spriteWidth / 8,
+        0 - this.spriteHeight / 8,
+        this.spriteWidth / 4,
+        this.spriteHeight / 4
+      );
+    }
+    context.restore();
   }
 }
 
@@ -146,16 +168,17 @@ function addBubbles() {
     if (bubblesArray[i].y < 0 - bubblesArray[i].radius) {
       bubblesArray.splice(i, 1);
     }
-    if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
-      if (!bubblesArray[i].counted) {
-        if (bubblesArray[i].sound == "sound1") bubbleSound1.play();
-        else bubbleSound2.play();
+    if (bubblesArray[i]) {
+      if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
+        if (!bubblesArray[i].counted) {
+          if (bubblesArray[i].sound == "sound1") bubbleSound1.play();
+          else bubbleSound2.play();
 
-        score++;
-        bubblesArray[i].counted = true;
+          score++;
+          bubblesArray[i].counted = true;
+          bubblesArray.splice(i, 1);
+        }
       }
-
-      bubblesArray.splice(i, 1);
     }
   }
 }
