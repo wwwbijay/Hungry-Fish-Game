@@ -2,12 +2,14 @@
 const canvas = document.getElementById("canvas1");
 const ctx = canvas.getContext("2d");
 const canvasPos = canvas.getBoundingClientRect();
+
 canvas.width = 800;
 canvas.height = 500;
 
 let score = 0;
 let gameFrame = 0;
 ctx.font = "30px Georgia";
+let gameSpeed = 1;
 
 //Mouse Interactivity
 const mouse = {
@@ -122,6 +124,8 @@ const player = new Player();
 
 //Bubbles
 const bubblesArray = [];
+const bubbleImage = new Image();
+bubbleImage.src = "assets/bubble-single.png";
 
 class Bubble {
   constructor() {
@@ -140,11 +144,19 @@ class Bubble {
     this.distance = Math.sqrt(dx * dx + dy * dy);
   }
   draw() {
-    ctx.fillStyle = "skyBlue";
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
+    // ctx.fillStyle = "skyBlue";
+    // ctx.beginPath();
+    // ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    // ctx.fill();
+    // ctx.closePath();
+
+    ctx.drawImage(
+      bubbleImage,
+      this.x - 65,
+      this.y - 65,
+      this.radius * 2.6,
+      this.radius * 2.6
+    );
   }
 }
 
@@ -162,31 +174,40 @@ function addBubbles() {
   for (let i = 0; i < bubblesArray.length; i++) {
     bubblesArray[i].draw();
     bubblesArray[i].update();
-  }
 
-  for (let i = 0; i < bubblesArray.length; i++) {
     if (bubblesArray[i].y < 0 - bubblesArray[i].radius) {
       bubblesArray.splice(i, 1);
-    }
-    if (bubblesArray[i]) {
-      if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
-        if (!bubblesArray[i].counted) {
-          if (bubblesArray[i].sound == "sound1") bubbleSound1.play();
-          else bubbleSound2.play();
+      i--;
+    } else if (
+      bubblesArray[i].distance <
+      bubblesArray[i].radius + player.radius
+    ) {
+      if (!bubblesArray[i].counted) {
+        if (bubblesArray[i].sound == "sound1") bubbleSound1.play();
+        else bubbleSound2.play();
 
-          score++;
-          bubblesArray[i].counted = true;
-          bubblesArray.splice(i, 1);
-        }
+        score++;
+        bubblesArray[i].counted = true;
+        bubblesArray.splice(i, 1);
+        i--;
       }
     }
   }
 }
 
+//Reapeating backgrounds
+// const background = new Image();
+// background.src = "assets/background.jpg";
+
+// function handleBackground() {
+//   ctx.draw(background, 0, 0, canvas.width, canvas.height);
+// }
+
 //Animation Loop
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // handleBackground();
   addBubbles();
   player.update();
   player.draw(ctx);
@@ -195,3 +216,6 @@ function animate() {
 }
 
 animate();
+window.addEventListener("resize", () => {
+  canvasPos = canvas.getBoundingClientRect();
+});
